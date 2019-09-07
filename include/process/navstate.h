@@ -5,7 +5,7 @@
 ** Login   <fangwentao>
 **
 ** Started on  Wed Jul 31 下午8:21:33 2019 little fang
-** Last update Sat Aug 2 上午10:54:27 2019 little fang
+** Last update Sat Aug 23 下午3:49:44 2019 little fang
 */
 
 #ifndef PROCESS_STATE_H_
@@ -17,9 +17,13 @@
 #include "data/navdataque.h"
 #include "gpsprocess.h"
 #include "navconfig.hpp"
+#include "camera/msckf.hpp"
+
 
 namespace mscnav
 {
+using camera::MsckfProcess;
+
 class State
 {
 public:
@@ -31,7 +35,7 @@ public:
     static Ptr GetState();
 
 private:
-    State(){}
+    State() {}
     State(State &&) = delete;
     State(const State &) = delete;
     State &operator=(State &&) = delete;
@@ -40,10 +44,11 @@ private:
 
 public:
     void StartProcessing();
+    NavInfo GetNavInfo() const;
+    void ReviseState(const Eigen::VectorXd &dx);
 
 private:
     bool InitializeState();
-    void ReviseState(const Eigen::VectorXd &dx);
 
 private:
     DataQueue::Ptr data_queue_;
@@ -57,6 +62,11 @@ private:
     utiltool::NavInfo nav_info_bak_;
     utiltool::NavTime latest_update_time_;
     Eigen::MatrixXd state_q_;
+
+private:
+    MsckfProcess::Ptr msckf_process_;
+    CameraDataCollect::Ptr camera_data_ = nullptr;
+    bool camera_enable;
 
 private:
     std::ofstream ofs_result_output_;
